@@ -15,19 +15,22 @@ function generateToken(user){
 }
 module.exports = {
   Mutation: {
-    async login(_, { username, password}){
+    async login(_, { username, password }){
       const {errors, valid} = validateLoginInput(username, password);
 
       if(!valid){
         throw new UserInputError('errors', { errors });
       }
+
       const user = await User.findOne({ username })
+
       if(!user){
         errors.general = 'User not found';
         throw new UserInputError('User not found', { errors });
       }
       
       const match = await bcrypt.compare(password, user.password);
+
       if(!match){
         errors.general = 'Wrong Credentials';
         throw new UserInputError('Wrong Credentials', { errors })
@@ -41,14 +44,11 @@ module.exports = {
         token
       }
     },
-    async register(
-      _, 
-      { 
-        registerInput: { username, email, password, confirmPassword}
-      }, 
-    ) {
-      // TODO Validate user data
+
+    async register(_, { registerInput: { username, email, password, confirmPassword} }) {
+      // Validate user data
       const { valid, errors } = validateRegisterInput(username, email, password, confirmPassword);
+
       if(!valid){
         throw new UserInputError('Errors', { errors });
       }
@@ -76,11 +76,11 @@ module.exports = {
       const res = await newUser.save();
 
       const token = generateToken(res)
+      
       return {
         ...res._doc,
         id: res._id,
         token
-
       }
     }
   }
